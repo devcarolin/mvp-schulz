@@ -322,7 +322,7 @@ class Medicao:
 # Classe de conexão e persistência
 # ---------------------------------------------------------------------------
 class BancoDados:
-    """Gerencia a conexão SQLite e executa INSERT, SELECT e UPDATE."""
+    """Gerencia a conexão SQLite e executa INSERT, SELECT, UPDATE e DELETE (CRUD)."""
 
     DDL = """
     CREATE TABLE IF NOT EXISTS tecnicos (
@@ -493,3 +493,22 @@ class BancoDados:
              m.validar_status(), m.data_calibracao, m.id_medicao))
         if cur.rowcount == 0:
             raise ErroBancoDados(f"Medição id={m.id_medicao} não encontrada.")
+
+    # --- DELETE --------------------------------------------------------------
+    def excluir_medicao(self, id_medicao: int) -> None:
+        cur = self._executar("DELETE FROM medicoes WHERE id_medicao = ?", (id_medicao,))
+        if cur.rowcount == 0:
+            raise ErroBancoDados(f"Medição id={id_medicao} não encontrada.")
+
+    def excluir_equipamento(self, id_equipamento: int) -> None:
+        """Falha com ErroBancoDados se o equipamento ainda tiver medições (FK)."""
+        cur = self._executar("DELETE FROM equipamentos WHERE id_equipamento = ?",
+                             (id_equipamento,))
+        if cur.rowcount == 0:
+            raise ErroBancoDados(f"Equipamento id={id_equipamento} não encontrado.")
+
+    def excluir_tecnico(self, id_tecnico: int) -> None:
+        """Falha com ErroBancoDados se o técnico ainda tiver medições (FK)."""
+        cur = self._executar("DELETE FROM tecnicos WHERE id_tecnico = ?", (id_tecnico,))
+        if cur.rowcount == 0:
+            raise ErroBancoDados(f"Técnico id={id_tecnico} não encontrado.")

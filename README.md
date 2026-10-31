@@ -14,7 +14,7 @@ Esta é a **Parte 1 do MVP**: as classes do sistema em Programação Orientada a
 | Arquivo | Descrição |
 |---|---|
 | `03_banco.sql` | Script de criação das tabelas `tecnicos`, `equipamentos` e `medicoes` |
-| `04_classes.py` | Classes `Tecnico`, `Equipamento`, `Medicao` e `BancoDados` (INSERT, SELECT e UPDATE) |
+| `04_classes.py` | Classes `Tecnico`, `Equipamento`, `Medicao` e `BancoDados` (INSERT, SELECT, UPDATE e DELETE) |
 | `05_main.py` | Demonstração: insere dados de teste, faz consulta com JOIN e exibe o relatório de calibração |
 | `06_mvp_parte1.md` | Documentação técnica: padrões de POO, UML, tratamento de erros e validação do fluxo |
 

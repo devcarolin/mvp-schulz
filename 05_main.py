@@ -121,8 +121,19 @@ def main() -> None:
             equipamento.id_equipamento) if m.id_medicao == alvo.id_medicao)
         print("Depois:", recarregada, f"| erro recalculado = {recarregada.calcular_erro():.3f}")
 
+        # 5b. DELETE -------------------------------------------------------------
+        titulo("5. DELETE: exclusão de uma medição de teste")
+        temporaria = banco.inserir_medicao(Medicao(
+            equipamento.id_equipamento, tecnico.id_tecnico, "TESTE_EXCLUSAO",
+            1.0, 0.1, -0.1, 1.0, data_calibracao=DATA_CALIBRACAO))
+        antes = len(banco.listar_medicoes_do_equipamento(equipamento.id_equipamento))
+        print(f"Medição de teste inserida (id {temporaria.id_medicao}). Total de medições: {antes}")
+        banco.excluir_medicao(temporaria.id_medicao)
+        depois = len(banco.listar_medicoes_do_equipamento(equipamento.id_equipamento))
+        print(f"Medição de teste excluída. Total de medições: {depois}")
+
         # 6. Tratamento de erros -----------------------------------------------------
-        titulo("5. Tratamento de erros")
+        titulo("6. Tratamento de erros")
         testes = [
             ("Valor não numérico",
              lambda: Medicao(1, 1, "TESTE", 1.0, 0.1, -0.1, "abc")),
@@ -135,6 +146,8 @@ def main() -> None:
             ("Equipamento inexistente (FK)",
              lambda: banco.inserir_medicao(
                  Medicao(999, tecnico.id_tecnico, "TESTE", 1.0, 0.1, -0.1, 1.0))),
+            ("Excluir equipamento com medições",
+             lambda: banco.excluir_equipamento(equipamento.id_equipamento)),
             ("UPDATE em id inexistente",
              lambda: banco.atualizar_medicao(
                  Medicao(1, 1, "TESTE", 1.0, 0.1, -0.1, 1.0, id_medicao=9999))),
@@ -147,7 +160,7 @@ def main() -> None:
                 print(f"[OK] {nome:<30} -> {type(erro).__name__}: {erro}")
 
         # Conferência final ------------------------------------------------------------
-        titulo("6. Relatório final após a correção")
+        titulo("7. Relatório final após a correção")
         imprimir_relatorio(banco.relatorio_calibracao("703.1208"))
 
 

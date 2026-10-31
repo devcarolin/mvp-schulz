@@ -15,7 +15,7 @@ Esta etapa transforma a modelagem da AV 02 (tabelas `tecnicos`, `equipamentos` e
 
 - três classes de domínio (`Tecnico`, `Equipamento`, `Medicao`), com validação própria;
 - a validação metrológica `APROVADO`/`REPROVADO` dentro de `Medicao`;
-- uma classe de conexão e persistência (`BancoDados`) com INSERT, SELECT e UPDATE;
+- uma classe de conexão e persistência (`BancoDados`) com INSERT, SELECT, UPDATE e DELETE (CRUD);
 - um script de demonstração (`05_main.py`) com inserção, consulta com JOIN e relatório no terminal.
 
 Ficam para a Parte 2: leitura do relatório da MMC (Excel), regras de higienização (RH01–RH30), cálculo completo da incerteza (EA-4/02) e geração do PDF do certificado.
@@ -112,6 +112,7 @@ O script recria o arquivo `calibracao_schulz.db` a cada execução, para que a d
         | + relatorio_calibracao(tag) : JOIN das 3 tabelas         |
         | + atualizar_tecnico / atualizar_equipamento /            |
         |   atualizar_medicao                                      |
+        | + excluir_tecnico / excluir_equipamento / excluir_medicao|
         | - _executar(sql, params) / _consultar(sql, params)       |
         +----------------------------------------------------------+
         ErroBancoDados (Exception) é levantada por BancoDados.
@@ -185,7 +186,8 @@ Há duas camadas.
 |---|---|---|
 | TAG ou matrícula duplicada | `IntegrityError` (UNIQUE) | `ErroBancoDados: Violação de integridade` |
 | Equipamento ou técnico inexistente | `IntegrityError` (FOREIGN KEY) | `ErroBancoDados: Violação de integridade` |
-| UPDATE em id que não existe | `rowcount == 0` | `ErroBancoDados: Medição id=... não encontrada` |
+| UPDATE ou DELETE em id que não existe | `rowcount == 0` | `ErroBancoDados: Medição id=... não encontrada` |
+| Excluir equipamento ou técnico que possui medições | `IntegrityError` (FOREIGN KEY) | `ErroBancoDados: Violação de integridade` |
 | Conexão não aberta | verificação prévia | `ErroBancoDados: Conexão não aberta` |
 | Qualquer outro erro do banco | `sqlite3.Error` | `ErroBancoDados: Erro SQL` |
 
@@ -203,7 +205,8 @@ Executamos `python 05_main.py` e conferimos cada etapa.
 | Instanciação e INSERT | 2 técnicos, 1 equipamento (703.1208) e 14 medições gravados; textos normalizados (`"  Jose Alcides   Rosa Junior "` virou `Jose Alcides Rosa Junior`; `mat-0001` virou `MAT-0001`); fabricante ausente gravado como `Não consta`, igual ao certificado |
 | Consulta com JOIN | relatório com 14 parâmetros: 8 aprovados e 6 reprovados |
 | UPDATE | `62P_POSIÇÃO 1` corrigida de 0,430 para 0,090 (digitada com vírgula): status passou de `REPROVADO` para `APROVADO` e o erro foi recalculado para 0,090 |
-| Tratamento de erros | os 6 cenários de falha foram capturados com mensagem clara, sem interromper o programa |
+| DELETE | medição de teste inserida e excluída; total de medições voltou de 15 para 14 |
+| Tratamento de erros | os 7 cenários de falha foram capturados com mensagem clara, sem interromper o programa |
 | Relatório final | 9 aprovados e 5 reprovados, coerente com o UPDATE |
 
 **Conferência com o documento real.** Os 14 parâmetros inseridos vêm do certificado de calibração nº 00091/2026. Os valores de **erro** calculados pelo sistema (0,002; 0,027; 0,004; 0,430; 0,003; 0,245; 0,004; 0,959; 0,006; 0,236; 0,001; 0,132; 0,004; 0,868) coincidem com a coluna *Erro* do certificado.
@@ -230,7 +233,7 @@ Total: 14 parâmetros | aprovados: 8 | reprovados: 6
 | RF04 — calcular erro de cada característica | `Medicao.calcular_erro()` |
 | RF06 — limites de tolerância e situação por característica | `limite_superior`, `limite_inferior`, `validar_status()` |
 | RF07 — destacar características reprovadas | coluna `STATUS` do relatório |
-| RF09 — manter cadastros | `inserir_*`, `buscar_*` e `atualizar_*` de técnicos e equipamentos |
+| RF09 — manter cadastros | `inserir_*`, `buscar_*`, `atualizar_*` e `excluir_*` de técnicos e equipamentos |
 | RF12 — consultar calibrações | `relatorio_calibracao()` e `listar_medicoes_do_equipamento()` |
 | RNF03 — precisão de sete casas | `CASAS_DECIMAIS = 7` |
 | RNF04 — rastreabilidade | data, técnico e equipamento gravados em cada medição |
